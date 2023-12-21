@@ -1,4 +1,4 @@
-import client from "./apiConfig";
+import client from "./apiClient";
 
 export const getPeople = async () => {
     const res = await client.get("/Person");

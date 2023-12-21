@@ -1,4 +1,4 @@
-import client from "./apiConfig";
+import client from "./apiClient";
 
 export const login = async (username, password) => {
     const res = await client.post("/Login", {

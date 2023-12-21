@@ -1,4 +1,4 @@
-import client from "./apiConfig";
+import client from "./apiClient";
 import peopleApi from "./peopleApi";
 
 export const getAllHouseholds = async () => {

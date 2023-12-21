@@ -6,6 +6,7 @@ import { useLoginStore } from "@/stores/loginStore.js";
 import AddHouseHold from "@/components/AddHouseHold.vue";
 import AddPerson from "@/components/AddPerson.vue";
 import AddNewborn from "@/components/AddNewborn.vue";
+import AddFee from "@/components/AddFee.vue";
 
 const homeStore = useHomeStore();
 const loginStore = useLoginStore();
@@ -17,11 +18,12 @@ const selectedList = ref([]);
 const dialogVisible = ref(false);
 const currentAction = ref("");
 const dialogMessage = ref("");
-const currentId = ref(null);
+const currentId = ref(1);
 const addHouseHold = ref(null);
 const addPerson = ref(null);
 const addNewborn = ref(null);
 const splitHouseHold = ref(null);
+const addFee = ref(null);
 
 onMounted(async () => {
     tableData.value = await homeStore.getHouseHoldList();
@@ -30,9 +32,19 @@ onMounted(async () => {
 
 watch(currentId, async (newValue, oldValue) => {
     if (newValue != oldValue) {
-        await getDetailHousehold();
+        if (homeStore.currentIndex == "1-2") await getDetailHousehold();
+        if (homeStore.currentIndex == "3-2") await getFeeByHouseholdId();
     }
 });
+
+async function getFeeByHouseholdId() {
+    if (!currentId.value) {
+        tableData.value = [];
+        return;
+    }
+
+    tableData.value = await homeStore.getFeeByHouseholdId(currentId.value);
+}
 
 async function getDetailHousehold() {
     if (!currentId.value) {
@@ -71,8 +83,19 @@ async function getPeople() {
     });
 }
 
+async function getFeeList() {
+    tableData.value = await homeStore.getAllFees();
+}
+
+function handleSelectionChange(selected) {
+    selectedList.value = selected;
+}
+
 async function selectMenu(index) {
     homeStore.setCurrentIndex(index);
+    currentId.value = homeStore.householdList[0]?.id;
+    selectedList.value = [];
+    tableData.value = [];
     switch (index) {
         case "1-1":
             tableContent.value = true;
@@ -80,7 +103,6 @@ async function selectMenu(index) {
             tableData.value = await homeStore.getHouseHoldList();
             break;
         case "1-2":
-            currentId.value = null;
             tableContent.value = true;
             tableColumn.value = homeStore.columns;
             await getDetailHousehold();
@@ -90,13 +112,19 @@ async function selectMenu(index) {
             tableColumn.value = homeStore.columns;
             await getPeople();
             break;
+        case "3-1":
+            tableContent.value = true;
+            tableColumn.value = homeStore.columns;
+            await getFeeList();
+            break;
+        case "3-2":
+            tableContent.value = true;
+            tableColumn.value = homeStore.columns;
+            await getFeeByHouseholdId();
+            break;
         default:
             break;
     }
-}
-
-function handleSelectionChange(selected) {
-    selectedList.value = selected;
 }
 
 async function handleAction(data) {
@@ -112,6 +140,9 @@ async function handleAction(data) {
                     break;
                 case "2-1":
                     await getPeople();
+                    break;
+                case "3-1":
+                    await getFeeList();
                     break;
                 default:
                     break;
@@ -143,6 +174,14 @@ async function handleAction(data) {
             await getDetailHousehold();
             await homeStore.getHouseHoldList();
             break;
+        case "addFee":
+            await homeStore.createFee(data);
+            await getFeeList();
+            break;
+        case "changeFeeStatus":
+            await homeStore.changeFeeStatus(data);
+            await getFeeByHouseholdId();
+            break;
         default:
             break;
     }
@@ -161,6 +200,10 @@ function handleAddAction() {
         case "2-1":
             currentAction.value = "addPerson";
             addPerson.value.showdialog();
+            break;
+        case "3-1":
+            currentAction.value = "addFee";
+            addFee.value.showdialog();
             break;
         default:
             break;
@@ -209,6 +252,10 @@ function handleAddAction() {
                             </el-icon>
                             Quản lý thu phí
                         </template>
+                        <el-menu-item index="3-1"> Danh sách phí </el-menu-item>
+                        <el-menu-item index="3-2">
+                            Phí của từng hộ
+                        </el-menu-item>
                     </el-sub-menu>
                 </el-menu>
             </el-scrollbar>
@@ -225,7 +272,10 @@ function handleAddAction() {
                         v-model="currentId"
                         placeholder="Mã hộ khẩu"
                         size="default"
-                        v-if="homeStore.currentIndex == '1-2'"
+                        v-if="
+                            homeStore.currentIndex == '1-2' ||
+                            homeStore.currentIndex == '3-2'
+                        "
                     >
                         <el-option
                             v-for="item in homeStore.householdList.map(
@@ -254,7 +304,12 @@ function handleAddAction() {
                     >
                         Tách hộ khẩu
                     </el-button>
-                    <el-button :icon="Plus" circle @click="handleAddAction" />
+                    <el-button
+                        :icon="Plus"
+                        circle
+                        @click="handleAddAction"
+                        v-if="homeStore.currentIndex != '3-2'"
+                    />
                     <el-button
                         type="danger"
                         :icon="Delete"
@@ -274,6 +329,10 @@ function handleAddAction() {
                                 ) {
                                     dialogMessage =
                                         'Bạn có chắc chắn muốn xóa những nhân khẩu đã chọn?';
+                                }
+                                if (homeStore.currentIndex == '3-1') {
+                                    dialogMessage =
+                                        'Bạn có chắc chắn muốn xóa những khoản phí đã chọn?';
                                 }
                             }
                         "
@@ -301,14 +360,44 @@ function handleAddAction() {
                             fixed="right"
                             label=""
                             width="120"
-                            v-if="
-                                homeStore.currentIndex == '1-12' ||
-                                homeStore.currentIndex == '2-11'
-                            "
+                            v-if="homeStore.currentIndex == '3-2'"
                         >
-                            <template #default>
-                                <el-button link type="danger" size="small">
-                                    Đã mất
+                            <template #default="scope">
+                                <el-button
+                                    type="success"
+                                    size="small"
+                                    v-if="
+                                        tableData[scope.$index].is_paid ==
+                                        'Chưa đóng'
+                                    "
+                                    @click="
+                                        () => {
+                                            currentAction = 'changeFeeStatus';
+                                            handleAction(
+                                                tableData[scope.$index]
+                                            );
+                                        }
+                                    "
+                                >
+                                    Đã đóng
+                                </el-button>
+                                <el-button
+                                    type="danger"
+                                    size="small"
+                                    v-if="
+                                        tableData[scope.$index].is_paid ==
+                                        'Đã đóng'
+                                    "
+                                    @click="
+                                        () => {
+                                            currentAction = 'changeFeeStatus';
+                                            handleAction(
+                                                tableData[scope.$index]
+                                            );
+                                        }
+                                    "
+                                >
+                                    Chưa đóng
                                 </el-button>
                             </template>
                         </el-table-column>
@@ -373,6 +462,16 @@ function handleAddAction() {
     <Teleport to="#app">
         <AddNewborn
             ref="addNewborn"
+            @data-change="
+                async (form) => {
+                    handleAction(form);
+                }
+            "
+        />
+    </Teleport>
+    <Teleport to="#app">
+        <AddFee
+            ref="addFee"
             @data-change="
                 async (form) => {
                     handleAction(form);

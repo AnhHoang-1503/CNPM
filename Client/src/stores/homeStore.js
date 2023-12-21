@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import { ref, watch } from "vue";
 import householdApi from "@/api/householdApi";
 import peopleApi from "@/api/peopleApi";
+import feeApi from "@/api/feeApi";
 
 const columnList = {
     "1-1": [
@@ -220,6 +221,56 @@ const columnList = {
             width: "180",
         },
     ],
+    "3-1": [
+        {
+            name: "id",
+            label: "Mã phí",
+            width: "120",
+        },
+        {
+            name: "name",
+            label: "Tên phí",
+        },
+        {
+            name: "type",
+            label: "Loại phí",
+        },
+        {
+            name: "totalAmount",
+            label: "Tổng số tiền",
+        },
+        {
+            name: "paidAmount",
+            label: "Đã thu",
+        },
+    ],
+    "3-2": [
+        {
+            name: "fee_id",
+            label: "Mã phí",
+            width: "120",
+        },
+        {
+            name: "name",
+            label: "Tên phí",
+        },
+        {
+            name: "type",
+            label: "Loại phí",
+        },
+        {
+            name: "is_paid",
+            label: "Tình trạng",
+        },
+        {
+            name: "date_of_payment",
+            label: "Ngày đóng",
+        },
+        {
+            name: "amount",
+            label: "Số tiền",
+        },
+    ],
 };
 
 export const useHomeStore = defineStore("home", () => {
@@ -248,6 +299,10 @@ export const useHomeStore = defineStore("home", () => {
         await peopleApi.createNewborn(newborn);
     }
 
+    async function changeFeeStatus(fee) {
+        await feeApi.changeFeeStatus(fee.bill_Id);
+    }
+
     async function deleteAllSelected(list) {
         switch (currentIndex.value) {
             case "1-1":
@@ -256,6 +311,9 @@ export const useHomeStore = defineStore("home", () => {
             case "1-2":
             case "2-1":
                 await peopleApi.deletePeople(list);
+                break;
+            case "3-1":
+                await feeApi.deleteFees(list);
                 break;
             default:
                 break;
@@ -268,6 +326,18 @@ export const useHomeStore = defineStore("home", () => {
 
     async function splitHouseHold(newHouseHold) {
         await householdApi.splitHouseHold(newHouseHold);
+    }
+
+    async function getAllFees() {
+        return await feeApi.getAllFees();
+    }
+
+    async function createFee(fee) {
+        return await feeApi.createFee(fee);
+    }
+
+    async function getFeeByHouseholdId(householdId) {
+        return await feeApi.getFeeByHouseholdId(householdId);
     }
 
     return {
@@ -286,5 +356,9 @@ export const useHomeStore = defineStore("home", () => {
         deleteAllSelected,
         createPerson,
         splitHouseHold,
+        getAllFees,
+        createFee,
+        getFeeByHouseholdId,
+        changeFeeStatus,
     };
 });
