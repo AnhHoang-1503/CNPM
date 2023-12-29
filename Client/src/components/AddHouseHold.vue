@@ -17,15 +17,18 @@ const props = defineProps({
     },
 });
 
-onMounted(() => {
-    if (props.data) {
-        form.value = props.data;
+watch(
+    () => props.data,
+    (val) => {
+        if (val) {
+            form.value = { ...val };
+        }
     }
-});
+);
 
 const homeStore = useHomeStore();
 const dialogFormVisible = ref(false);
-const form = reactive({
+const form = ref({
     house_number: "",
     street: "",
     ward: "",
@@ -46,10 +49,15 @@ const emits = defineEmits(["dataChange"]);
 
 watch(dialogFormVisible, (val) => {
     if (!val) {
-        form.house_number = "";
-        form.street = "";
-        form.ward = "";
-        form.district = "";
+        form.value = {
+            house_number: "",
+            street: "",
+            ward: "",
+            district: "",
+        };
+    }
+    if (val) {
+        form.value = { ...props.data };
     }
 });
 </script>
@@ -59,9 +67,9 @@ watch(dialogFormVisible, (val) => {
         <el-dialog
             v-model="dialogFormVisible"
             :title="title"
-            style="width: 40%"
+            style="width: 35%"
         >
-            <el-form :model="form">
+            <el-form :model="form" :label-position="'top'">
                 <el-form-item label="Số nhà" :label-width="formLabelWidth">
                     <el-input v-model="form.house_number" autocomplete="off" />
                 </el-form-item>
@@ -103,4 +111,8 @@ watch(dialogFormVisible, (val) => {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.el-form {
+    padding: 0 40px;
+}
+</style>

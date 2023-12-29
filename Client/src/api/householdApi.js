@@ -3,11 +3,18 @@ import peopleApi from "./peopleApi";
 
 export const getAllHouseholds = async () => {
     const res = await client.get("/Family");
-    const listHousehold = res.data;
-    listHousehold.forEach(async (household) => {
+    let listHousehold = res.data;
+    listHousehold.forEach((household) => {
+        household.peopleCount = 0;
+    });
+
+    const listPromise = listHousehold.map(async (household) => {
         let people = await getPeopleInHouseHold(household.id);
         household.peopleCount = people?.length;
+        return household;
     });
+
+    listHousehold = await Promise.all(listPromise);
     return listHousehold;
 };
 
@@ -32,10 +39,15 @@ export const splitHouseHold = async (newHouseHold) => {
     await client.post("/Family/household_spilit", newHouseHold);
 };
 
+export const updateHouseHold = async (oldData, newData) => {
+    await client.put(`/Family/${oldData.id}`, newData);
+};
+
 export default {
     getAllHouseholds,
     getPeopleInHouseHold,
     createHouseHold,
     deleteHouseholds,
     splitHouseHold,
+    updateHouseHold,
 };

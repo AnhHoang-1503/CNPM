@@ -2,8 +2,10 @@
 import { ref } from "vue";
 import { User, Key } from "@element-plus/icons-vue";
 import { useLoginStore } from "@/stores/loginStore";
+import { useHomeStore } from "@/stores/homeStore";
 
 const loginStore = useLoginStore();
+const homeStore = useHomeStore();
 const username = ref("");
 const password = ref("");
 const isLoading = ref(false);
@@ -11,6 +13,7 @@ const login = async () => {
     try {
         isLoading.value = true;
         await loginStore.login(username.value, password.value);
+        await homeStore.setDataToDefault();
     } catch (error) {
         console.log("login ~ error:", error);
     } finally {

@@ -50,6 +50,7 @@ const columnList = {
             name: "name",
             label: "Tên",
             width: "180",
+            fixed: "left",
         },
         {
             name: "gender",
@@ -139,6 +140,7 @@ const columnList = {
             name: "name",
             label: "Tên",
             width: "180",
+            fixed: "left",
         },
         {
             name: "gender",
@@ -340,6 +342,12 @@ export const useHomeStore = defineStore("home", () => {
         return await feeApi.getFeeByHouseholdId(householdId);
     }
 
+    async function setDataToDefault() {
+        currentIndex = ref("1-1");
+        columns = ref(columnList[currentIndex.value]);
+        householdList = ref([]);
+    }
+
     return {
         currentIndex,
         setCurrentIndex(index) {
@@ -360,5 +368,6 @@ export const useHomeStore = defineStore("home", () => {
         createFee,
         getFeeByHouseholdId,
         changeFeeStatus,
+        setDataToDefault,
     };
 });

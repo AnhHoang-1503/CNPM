@@ -212,59 +212,66 @@ function handleAddAction() {
 </script>
 
 <template>
-    <el-container class="layout-container-demo" style="height: 600px">
-        <el-aside width="200px">
-            <el-scrollbar class="aside">
-                <el-menu
-                    :default-openeds="['1']"
-                    default-active="1-1"
-                    @select="selectMenu"
-                >
-                    <el-sub-menu index="1">
-                        <template #title>
-                            <el-icon>
-                                <House />
-                            </el-icon>
-                            Quản lý hộ khẩu
-                        </template>
-                        <el-menu-item index="1-1">
-                            Danh sách hộ khẩu
-                        </el-menu-item>
-                        <el-menu-item index="1-2">
-                            Chi tiết hộ khẩu
-                        </el-menu-item>
-                    </el-sub-menu>
-                    <el-sub-menu index="2">
-                        <template #title>
-                            <el-icon>
-                                <User />
-                            </el-icon>
-                            Quản lý nhân khẩu
-                        </template>
-                        <el-menu-item index="2-1">
-                            Danh sách nhân khẩu
-                        </el-menu-item>
-                    </el-sub-menu>
-                    <el-sub-menu index="3">
-                        <template #title>
-                            <el-icon>
-                                <Money />
-                            </el-icon>
-                            Quản lý thu phí
-                        </template>
-                        <el-menu-item index="3-1"> Danh sách phí </el-menu-item>
-                        <el-menu-item index="3-2">
-                            Phí của từng hộ
-                        </el-menu-item>
-                    </el-sub-menu>
-                </el-menu>
-            </el-scrollbar>
-            <div class="aside-logout" @click="loginStore.logout()">
-                <span>Đăng xuất</span>
-            </div>
-        </el-aside>
+    <el-config-provider :locale="vi">
+        <el-container class="layout-container-demo">
+            <el-aside width="200px">
+                <el-scrollbar class="aside">
+                    <el-menu
+                        :default-openeds="['1']"
+                        default-active="/"
+                        @select="selectMenu"
+                        :router="true"
+                    >
+                        <el-sub-menu index="1">
+                            <template #title>
+                                <el-icon>
+                                    <House />
+                                </el-icon>
+                                Quản lý hộ khẩu
+                            </template>
+                            <el-menu-item index="/">
+                                Danh sách hộ khẩu
+                            </el-menu-item>
+                            <el-menu-item index="/detail-household">
+                                Chi tiết hộ khẩu
+                            </el-menu-item>
+                        </el-sub-menu>
+                        <el-sub-menu index="2">
+                            <template #title>
+                                <el-icon>
+                                    <User />
+                                </el-icon>
+                                Quản lý nhân khẩu
+                            </template>
+                            <el-menu-item index="2-1">
+                                Danh sách nhân khẩu
+                            </el-menu-item>
+                        </el-sub-menu>
+                        <el-sub-menu index="3">
+                            <template #title>
+                                <el-icon>
+                                    <Money />
+                                </el-icon>
+                                Quản lý thu phí
+                            </template>
+                            <el-menu-item index="3-1">
+                                Danh sách phí
+                            </el-menu-item>
+                            <el-menu-item index="3-2">
+                                Phí của từng hộ
+                            </el-menu-item>
+                        </el-sub-menu>
+                    </el-menu>
+                </el-scrollbar>
+                <div class="aside-logout" @click="loginStore.logout()">
+                    <span>Đăng xuất</span>
+                </div>
+            </el-aside>
 
-        <el-container v-if="tableContent">
+            <el-container>
+                <RouterView></RouterView>
+            </el-container>
+            <!-- <el-container v-if="tableContent">
             <el-header style="font-size: 20px">
                 <div class="toolbar">
                     <el-select
@@ -368,7 +375,7 @@ function handleAddAction() {
                                     size="small"
                                     v-if="
                                         tableData[scope.$index].is_paid ==
-                                        'Chưa đóng'
+                                        'Đã đóng'
                                     "
                                     @click="
                                         () => {
@@ -386,7 +393,7 @@ function handleAddAction() {
                                     size="small"
                                     v-if="
                                         tableData[scope.$index].is_paid ==
-                                        'Đã đóng'
+                                        'Chưa đóng'
                                     "
                                     @click="
                                         () => {
@@ -404,81 +411,47 @@ function handleAddAction() {
                     </el-table>
                 </el-scrollbar>
             </el-main>
+        </el-container> -->
         </el-container>
-        <el-container v-if="!tableContent"></el-container>
-    </el-container>
-    <Teleport to="#app">
-        <el-dialog v-model="dialogVisible" width="30%">
-            <span style="font-size: 16px">{{ dialogMessage }}</span>
-            <template #footer>
-                <span class="dialog-footer">
-                    <el-button @click="dialogVisible = false"> Huỷ </el-button>
-                    <el-button
-                        type="primary"
-                        @click="
-                            () => {
-                                dialogVisible = false;
-                                handleAction();
-                            }
-                        "
-                    >
-                        Xác nhận
-                    </el-button>
-                </span>
-            </template>
-        </el-dialog>
-    </Teleport>
-    <Teleport to="#app">
-        <AddHouseHold
-            ref="addHouseHold"
-            @data-change="
-                async (form) => {
-                    handleAction(form);
-                }
-            "
-        />
-    </Teleport>
-    <Teleport to="#app">
-        <AddHouseHold
-            ref="splitHouseHold"
-            :title="'Thông tin hộ khẩu mới'"
-            @data-change="
-                async (form) => {
-                    handleAction(form);
-                }
-            "
-        />
-    </Teleport>
-    <Teleport to="#app">
-        <AddPerson
-            ref="addPerson"
-            @data-change="
-                async (form) => {
-                    handleAction(form);
-                }
-            "
-        />
-    </Teleport>
-    <Teleport to="#app">
-        <AddNewborn
-            ref="addNewborn"
-            @data-change="
-                async (form) => {
-                    handleAction(form);
-                }
-            "
-        />
-    </Teleport>
-    <Teleport to="#app">
-        <AddFee
-            ref="addFee"
-            @data-change="
-                async (form) => {
-                    handleAction(form);
-                }
-            "
-        />
-    </Teleport>
+
+        <Teleport to="#app">
+            <AddHouseHold
+                ref="splitHouseHold"
+                :title="'Thông tin hộ khẩu mới'"
+                @data-change="async (form) => {}"
+            />
+        </Teleport>
+        <Teleport to="#app">
+            <AddPerson
+                ref="addPerson"
+                @data-change="
+                    async (form) => {
+                        handleAction(form);
+                    }
+                "
+            />
+        </Teleport>
+        <Teleport to="#app">
+            <AddNewborn
+                ref="addNewborn"
+                @data-change="
+                    async (form) => {
+                        handleAction(form);
+                    }
+                "
+            />
+        </Teleport>
+        <Teleport to="#app">
+            <AddFee
+                ref="addFee"
+                @data-change="
+                    async (form) => {
+                        handleAction(form);
+                    }
+                "
+            />
+        </Teleport>
+    </el-config-provider>
 </template>
 
 <style scoped>
@@ -509,8 +482,8 @@ function handleAddAction() {
 }
 
 .layout-container-demo {
-    width: 1400px;
-    height: 800px;
+    width: 100vw;
+    height: 100vh;
     border-radius: 4px;
     background-color: #fff;
 }

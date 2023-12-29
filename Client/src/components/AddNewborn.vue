@@ -104,6 +104,7 @@ watch(dialogFormVisible, (val) => {
                         <el-form-item label="Ngày sinh" label-width="140px">
                             <el-config-provider :locale="vi">
                                 <el-date-picker
+                                    format="DD/MM/YYYY"
                                     v-model="form.date_of_birth"
                                     type="date"
                                     placeholder="Ngày sinh"
@@ -145,6 +146,7 @@ watch(dialogFormVisible, (val) => {
                                     "
                                     type="date"
                                     placeholder="Ngày sinh"
+                                    format="DD/MM/YYYY"
                                 />
                             </el-config-provider>
                         </el-form-item>

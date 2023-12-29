@@ -127,6 +127,7 @@ watch(dialogFormVisible, (val) => {
                                     v-model="form.date_of_birth"
                                     type="date"
                                     placeholder="Ngày sinh"
+                                    format="DD/MM/YYYY"
                                 />
                             </el-config-provider>
                         </el-form-item>
@@ -165,6 +166,7 @@ watch(dialogFormVisible, (val) => {
                                     v-model="form.date_of_issue"
                                     type="date"
                                     placeholder="Ngày sinh"
+                                    format="DD/MM/YYYY"
                                 />
                             </el-config-provider>
                         </el-form-item>
@@ -211,6 +213,7 @@ watch(dialogFormVisible, (val) => {
                                     "
                                     type="date"
                                     placeholder="Ngày sinh"
+                                    format="DD/MM/YYYY"
                                 />
                             </el-config-provider>
                         </el-form-item>
