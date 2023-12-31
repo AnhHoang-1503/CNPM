@@ -7,6 +7,7 @@ import AddHouseHold from "@/components/AddHouseHold.vue";
 import AddPerson from "@/components/AddPerson.vue";
 import AddNewborn from "@/components/AddNewborn.vue";
 import AddFee from "@/components/AddFee.vue";
+import vi from "element-plus/dist/locale/vi.mjs";
 
 const homeStore = useHomeStore();
 const loginStore = useLoginStore();
@@ -243,7 +244,7 @@ function handleAddAction() {
                                 </el-icon>
                                 Quản lý nhân khẩu
                             </template>
-                            <el-menu-item index="2-1">
+                            <el-menu-item index="list-people">
                                 Danh sách nhân khẩu
                             </el-menu-item>
                         </el-sub-menu>
@@ -254,10 +255,10 @@ function handleAddAction() {
                                 </el-icon>
                                 Quản lý thu phí
                             </template>
-                            <el-menu-item index="3-1">
+                            <el-menu-item index="list-fee">
                                 Danh sách phí
                             </el-menu-item>
-                            <el-menu-item index="3-2">
+                            <el-menu-item index="detail-fee">
                                 Phí của từng hộ
                             </el-menu-item>
                         </el-sub-menu>
@@ -413,44 +414,6 @@ function handleAddAction() {
             </el-main>
         </el-container> -->
         </el-container>
-
-        <Teleport to="#app">
-            <AddHouseHold
-                ref="splitHouseHold"
-                :title="'Thông tin hộ khẩu mới'"
-                @data-change="async (form) => {}"
-            />
-        </Teleport>
-        <Teleport to="#app">
-            <AddPerson
-                ref="addPerson"
-                @data-change="
-                    async (form) => {
-                        handleAction(form);
-                    }
-                "
-            />
-        </Teleport>
-        <Teleport to="#app">
-            <AddNewborn
-                ref="addNewborn"
-                @data-change="
-                    async (form) => {
-                        handleAction(form);
-                    }
-                "
-            />
-        </Teleport>
-        <Teleport to="#app">
-            <AddFee
-                ref="addFee"
-                @data-change="
-                    async (form) => {
-                        handleAction(form);
-                    }
-                "
-            />
-        </Teleport>
     </el-config-provider>
 </template>
 

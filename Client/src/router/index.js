@@ -19,6 +19,21 @@ const router = createRouter({
                     name: "detail-household",
                     component: () => import("@/views/DetailHouseHoldView.vue"),
                 },
+                {
+                    path: "/list-people",
+                    name: "list-people",
+                    component: () => import("@/views/ListPeopleView.vue"),
+                },
+                {
+                    path: "/list-fee",
+                    name: "list-fee",
+                    component: () => import("@/views/ListFeeView.vue"),
+                },
+                {
+                    path: "/detail-fee",
+                    name: "detail-fee",
+                    component: () => import("@/views/DetailFeeView.vue"),
+                },
             ],
         },
         {

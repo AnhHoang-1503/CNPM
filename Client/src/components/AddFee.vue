@@ -13,19 +13,23 @@ const props = defineProps({
     },
 });
 
-onMounted(() => {
-    if (props.data) {
-        form.value = props.data;
-    }
-});
-
 const dialogFormVisible = ref(false);
 
-const form = reactive({
+const form = ref({
     name: "",
     amount: 0,
     type: null,
+    mode: 0,
 });
+
+watch(
+    () => props.data,
+    (val) => {
+        if (val) {
+            form.value = { ...val };
+        }
+    }
+);
 
 const showdialog = () => {
     dialogFormVisible.value = true;
@@ -37,9 +41,15 @@ const emits = defineEmits(["dataChange"]);
 
 watch(dialogFormVisible, (val) => {
     if (!val) {
-        form.name = "";
-        form.amount = 0;
-        form.type = null;
+        form.value = {
+            name: "",
+            amount: 0,
+            type: null,
+            mode: 0,
+        };
+    }
+    if (val) {
+        form.value = { ...props.data };
     }
 });
 </script>
@@ -61,15 +71,25 @@ watch(dialogFormVisible, (val) => {
                 </el-form-item>
                 <el-form-item label="Phí phải đóng" label-width="100px">
                     <el-input
-                        type="number"
                         v-model="form.amount"
                         autocomplete="off"
+                        :formatter="
+                            (value) =>
+                                `${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+                        "
+                        :parser="(value) => value.replace(/\$\s?|(,*)/g, '')"
                     />
                 </el-form-item>
                 <el-form-item label="Loại phí" label-width="100px">
                     <el-select v-model="form.type">
                         <el-option label="Bắt buộc" :value="0" />
                         <el-option label="Tự nguyện" :value="1" />
+                    </el-select>
+                </el-form-item>
+                <el-form-item label="Hình Thức Phí" label-width="100px">
+                    <el-select v-model="form.mode">
+                        <el-option label="Cố định" :value="0" />
+                        <el-option label="Theo đầu người" :value="1" />
                     </el-select>
                 </el-form-item>
             </el-form>

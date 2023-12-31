@@ -2,70 +2,72 @@
 import { useHomeStore } from "@/stores/homeStore";
 import { ref, onMounted } from "vue";
 import { House, Plus, User, Money, Delete } from "@element-plus/icons-vue";
-import householdApi from "@/api/householdApi";
-import AddHouseHold from "@/components/AddHouseHold.vue";
+import feeApi from "@/api/feeApi";
+import AddFee from "@/components/AddFee.vue";
 
 const tableColumn = [
     {
         name: "id",
-        label: "Mã hộ",
-        width: "100",
-        fixed: "left",
+        label: "Mã phí",
+        width: "120",
     },
     {
-        name: "house_number",
-        label: "Số nhà",
-        width: "209",
+        name: "name",
+        label: "Tên phí",
     },
     {
-        name: "street",
-        label: "Đường",
+        name: "type",
+        label: "Loại phí",
     },
     {
-        name: "ward",
-        label: "Phường",
+        name: "totalAmount",
+        label: "Tổng số tiền",
     },
     {
-        name: "district",
-        label: "Huyện",
-    },
-    {
-        name: "peopleCount",
-        label: "Số thành viên",
+        name: "paidAmount",
+        label: "Đã thu",
     },
 ];
-const dialogMessage = "Bạn có chắc chắn muốn xóa những hộ khẩu đã chọn?";
+const dialogMessage = "Bạn có chắc chắn muốn xóa những khoản phí đã chọn?";
 
 const homeStore = useHomeStore();
 const selectedList = ref([]);
 const tableData = ref([]);
 const dialogVisible = ref(false);
 const currentEdit = ref(null);
+const showWarning = ref(false);
 
-const addHouseHold = ref(null);
-const editHouseHold = ref(null);
+const addFee = ref(null);
+const editFee = ref(null);
 
 function handleSelectionChange(selected) {
     selectedList.value = selected;
 }
 
 async function reloadData() {
-    tableData.value = await householdApi.getAllHouseholds();
-    homeStore.householdList = tableData.value;
-}
-
-async function createHouseHold(data) {
-    await householdApi.createHouseHold(data);
-    await reloadData();
-}
-
-async function updateHouseHold(data) {
-    await householdApi.updateHouseHold(currentEdit.value, data);
-    await reloadData();
+    tableData.value = await feeApi.getAllFees();
 }
 
 async function deleteAllSelected() {
-    await householdApi.deleteHouseholds(selectedList.value);
+    selectedList.value.forEach((item) => {
+        if (item.paidAmount != 0) {
+            showWarning.value = true;
+        }
+    });
+    if (showWarning.value) {
+        return;
+    }
+    await feeApi.deleteFees(selectedList.value);
+    await reloadData();
+}
+
+async function createFee(form) {
+    await feeApi.createFee(form);
+    await reloadData();
+}
+
+async function updateFee(form) {
+    await feeApi.updateFee(currentEdit.value, form);
     await reloadData();
 }
 
@@ -83,7 +85,7 @@ onMounted(async () => {
                         <el-button
                             :icon="Plus"
                             circle
-                            @click="addHouseHold.showdialog()"
+                            @click="addFee.showdialog()"
                         />
                         <el-button
                             type="danger"
@@ -115,22 +117,6 @@ onMounted(async () => {
                                 :fixed="column.fixed"
                                 show-overflow-tooltip
                             />
-                            <el-table-column fixed="right" label="" width="120">
-                                <template #default="scope">
-                                    <el-button
-                                        type="primary"
-                                        link
-                                        @click="
-                                            () => {
-                                                currentEdit = scope.row;
-                                                editHouseHold.showdialog();
-                                            }
-                                        "
-                                    >
-                                        Sửa
-                                    </el-button>
-                                </template></el-table-column
-                            >
                         </el-table>
                     </el-scrollbar>
                 </el-main>
@@ -160,23 +146,44 @@ onMounted(async () => {
             </el-dialog>
         </Teleport>
         <Teleport to="#app">
-            <AddHouseHold
-                ref="addHouseHold"
+            <el-dialog v-model="showWarning" width="30%">
+                <span style="font-size: 16px">
+                    Khoản phí này đã được thu, không thể thay đổi
+                </span>
+                <template #footer>
+                    <span class="dialog-footer">
+                        <el-button
+                            type="primary"
+                            @click="
+                                async () => {
+                                    showWarning = false;
+                                }
+                            "
+                        >
+                            Xác nhận
+                        </el-button>
+                    </span>
+                </template>
+            </el-dialog>
+        </Teleport>
+        <Teleport to="#app">
+            <AddFee
+                ref="addFee"
                 @data-change="
-                    async (data) => {
-                        createHouseHold(data);
+                    (form) => {
+                        createFee(form);
                     }
                 "
             />
         </Teleport>
         <Teleport to="#app">
-            <AddHouseHold
-                ref="editHouseHold"
-                title="Sửa hộ khẩu"
+            <AddFee
+                ref="editFee"
+                title="Sửa khoản phí"
                 :data="currentEdit"
                 @data-change="
-                    async (data) => {
-                        updateHouseHold(data);
+                    (form) => {
+                        updateFee(form);
                     }
                 "
             />

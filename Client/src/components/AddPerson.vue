@@ -15,15 +15,18 @@ const props = defineProps({
     },
 });
 
-onMounted(() => {
-    if (props.data) {
-        form.value = props.data;
+watch(
+    () => props.data,
+    (val) => {
+        if (val) {
+            form.value = { ...val };
+        }
     }
-});
+);
 
 const dialogFormVisible = ref(false);
 
-const form = reactive({
+const form = ref({
     name: "",
     alias: "",
     date_of_birth: new Date(),
@@ -55,25 +58,30 @@ const emits = defineEmits(["dataChange"]);
 
 watch(dialogFormVisible, (val) => {
     if (!val) {
-        form.name = "";
-        form.alias = "";
-        form.date_of_birth = new Date();
-        form.place_of_birth = "";
-        form.place_of_origin = "";
-        form.peoples = "Kinh";
-        form.job = ""; //
-        form.place_of_work = ""; //
-        form.identify_id = null; //
-        form.date_of_issue = new Date(); //
-        form.place_of_issue = ""; //
-        form.date_of_permanent_registration = new Date();
-        form.previous_permanent_residence = ""; //
-        form.family_id = null; //
-        form.relationship = "";
-        // form.moving_date = new Date(); //
-        // form.moving_to = ""; //
-        // form.note = ""; //
-        form.gender = 0;
+        form.value = {
+            name: "",
+            alias: "",
+            date_of_birth: new Date(),
+            place_of_birth: "",
+            place_of_origin: "",
+            peoples: "Kinh",
+            job: "",
+            place_of_work: "",
+            identify_id: null,
+            date_of_issue: new Date(),
+            place_of_issue: "",
+            date_of_permanent_registration: new Date(),
+            previous_permanent_residence: "",
+            family_id: null,
+            relationship: "",
+            // moving_date: new Date(),
+            // moving_to: "",
+            // note: "",
+            gender: 0,
+        };
+    }
+    if (val) {
+        form.value = { ...props.data };
     }
 });
 </script>

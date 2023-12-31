@@ -2,39 +2,107 @@
 import { useHomeStore } from "@/stores/homeStore";
 import { ref, onMounted } from "vue";
 import { House, Plus, User, Money, Delete } from "@element-plus/icons-vue";
+import peopleApi from "@/api/peopleApi";
+import AddPerson from "@/components/AddPerson.vue";
 import householdApi from "@/api/householdApi";
-import AddHouseHold from "@/components/AddHouseHold.vue";
+import { toISOString } from "@/utils/helpers.js";
 
 const tableColumn = [
     {
         name: "id",
-        label: "Mã hộ",
-        width: "100",
+        label: "Mã nhân khẩu",
+        width: "120",
+        fixed: "left",
+    },
+
+    {
+        name: "name",
+        label: "Tên",
+        width: "180",
         fixed: "left",
     },
     {
-        name: "house_number",
-        label: "Số nhà",
-        width: "209",
+        name: "gender",
+        label: "Giới tính",
+        width: "180",
     },
     {
-        name: "street",
-        label: "Đường",
+        name: "alias",
+        label: "Biệt danh",
+        width: "180",
     },
     {
-        name: "ward",
-        label: "Phường",
+        name: "date_of_birth",
+        label: "Ngày sinh",
+        width: "180",
     },
     {
-        name: "district",
-        label: "Huyện",
+        name: "place_of_birth",
+        label: "Nơi sinh",
+        width: "180",
     },
     {
-        name: "peopleCount",
-        label: "Số thành viên",
+        name: "place_of_origin",
+        label: "Nguyên quán",
+        width: "180",
+    },
+    {
+        name: "peoples",
+        label: "Dân tộc",
+        width: "180",
+    },
+    {
+        name: "job",
+        label: "Nghề nghiệp",
+        width: "180",
+    },
+    {
+        name: "place_of_work",
+        label: "Nơi làm việc",
+        width: "180",
+    },
+    {
+        name: "identify_id",
+        label: "Số CMND",
+        width: "180",
+    },
+    {
+        name: "date_of_issue",
+        label: "Ngày cấp",
+        width: "180",
+    },
+    {
+        name: "place_of_issue",
+        label: "Nơi cấp",
+        width: "180",
+    },
+    {
+        name: "date_of_permanent_registration",
+        label: "Ngày đăng ký HKTT",
+        width: "180",
+    },
+    {
+        name: "previous_permanent_residence",
+        label: "HKTT trước đó",
+        width: "180",
+    },
+    {
+        name: "relationship",
+        label: "Quan hệ với chủ hộ",
+        width: "180",
+    },
+    {
+        name: "family_id",
+        label: "Mã hộ",
+        width: "180",
+    },
+    {
+        name: "note",
+        label: "Ghi chú",
+        width: "180",
     },
 ];
-const dialogMessage = "Bạn có chắc chắn muốn xóa những hộ khẩu đã chọn?";
+const dialogMessage = "Bạn có chắc chắn muốn xóa những nhân khẩu đã chọn?";
 
 const homeStore = useHomeStore();
 const selectedList = ref([]);
@@ -42,30 +110,30 @@ const tableData = ref([]);
 const dialogVisible = ref(false);
 const currentEdit = ref(null);
 
-const addHouseHold = ref(null);
-const editHouseHold = ref(null);
+const addPerson = ref(null);
+const editPerson = ref(null);
 
 function handleSelectionChange(selected) {
     selectedList.value = selected;
 }
 
 async function reloadData() {
-    tableData.value = await householdApi.getAllHouseholds();
-    homeStore.householdList = tableData.value;
-}
-
-async function createHouseHold(data) {
-    await householdApi.createHouseHold(data);
-    await reloadData();
-}
-
-async function updateHouseHold(data) {
-    await householdApi.updateHouseHold(currentEdit.value, data);
-    await reloadData();
+    tableData.value = await peopleApi.getPeople();
+    homeStore.householdList = await householdApi.getAllHouseholds();
 }
 
 async function deleteAllSelected() {
-    await householdApi.deleteHouseholds(selectedList.value);
+    await peopleApi.deletePeople(selectedList.value);
+    await reloadData();
+}
+
+async function createPerson(form) {
+    await peopleApi.createPerson(form);
+    await reloadData();
+}
+
+async function updatePerson(data) {
+    await peopleApi.updatePerson(currentEdit.value, data);
     await reloadData();
 }
 
@@ -83,7 +151,7 @@ onMounted(async () => {
                         <el-button
                             :icon="Plus"
                             circle
-                            @click="addHouseHold.showdialog()"
+                            @click="addPerson.showdialog()"
                         />
                         <el-button
                             type="danger"
@@ -122,8 +190,24 @@ onMounted(async () => {
                                         link
                                         @click="
                                             () => {
-                                                currentEdit = scope.row;
-                                                editHouseHold.showdialog();
+                                                currentEdit = { ...scope.row };
+                                                currentEdit.date_of_birth =
+                                                    toISOString(
+                                                        currentEdit.date_of_birth
+                                                    );
+                                                currentEdit.date_of_issue =
+                                                    toISOString(
+                                                        currentEdit.date_of_issue
+                                                    );
+                                                currentEdit.date_of_permanent_registration =
+                                                    toISOString(
+                                                        currentEdit.date_of_permanent_registration
+                                                    );
+                                                currentEdit.gender =
+                                                    currentEdit.gender == 'Nam'
+                                                        ? 0
+                                                        : 1;
+                                                editPerson.showdialog();
                                             }
                                         "
                                     >
@@ -160,23 +244,23 @@ onMounted(async () => {
             </el-dialog>
         </Teleport>
         <Teleport to="#app">
-            <AddHouseHold
-                ref="addHouseHold"
+            <AddPerson
+                ref="addPerson"
                 @data-change="
-                    async (data) => {
-                        createHouseHold(data);
+                    async (form) => {
+                        createPerson(form);
                     }
                 "
             />
         </Teleport>
         <Teleport to="#app">
-            <AddHouseHold
-                ref="editHouseHold"
-                title="Sửa hộ khẩu"
+            <AddPerson
+                ref="editPerson"
+                title="Sửa thông tin nhân khẩu"
                 :data="currentEdit"
                 @data-change="
-                    async (data) => {
-                        updateHouseHold(data);
+                    async (form) => {
+                        updatePerson(form);
                     }
                 "
             />

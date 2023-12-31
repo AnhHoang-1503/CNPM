@@ -21,6 +21,19 @@ export const getAllHouseholds = async () => {
 export const getPeopleInHouseHold = async (householdId) => {
     const res = await client.get(`/Person/family/${householdId}`);
     const data = res.data;
+
+    data.forEach((item) => {
+        item.gender = item.gender == 0 ? "Nam" : "Nữ";
+        item.date_of_birth = new Date(item.date_of_birth).toLocaleDateString(
+            "vi-VN"
+        );
+        item.date_of_permanent_registration = new Date(
+            item.date_of_permanent_registration
+        ).toLocaleDateString("vi-VN");
+        item.date_of_issue = new Date(item.date_of_issue).toLocaleDateString(
+            "vi-VN"
+        );
+    });
     return data;
 };
 
